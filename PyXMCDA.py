@@ -104,6 +104,24 @@ def getValue(xmltree) :
 		val = None
 
 	return val
+
+	
+##########
+
+
+def getValues(xmltree) :
+
+	try :
+		xmlvalues = xmltree.find("values")
+		if xmlvalues != None :
+			values = []
+			for val in xmlvalues.findall("value") :
+				values.append(getValue(val))
+	except :
+		values = None
+
+	return values
+
 	
 	
 ##########
@@ -516,6 +534,22 @@ def getParameterByName (xmltree, paramName, paramFamilyName = None) :
 	else :
 		return None
 
+##########
+
+
+def getParametersByName (xmltree, paramName, paramFamilyName = None) :
+	if paramFamilyName == None :
+		params = xmltree.xpath(".//parameters[@name='"+paramName+"']")[0]
+	else :
+		params = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameters[@name=\'"+paramName+"\']")[0]
+	if params != None :
+		paramList = []
+		for param in params.findall("parameter") :
+			paramList.append(getValue(param))
+		return paramList
+	else :
+		return None
+		
 
 ##########################################################################
 #                                                                        #
