@@ -539,6 +539,20 @@ def writeFooter (xmlfile) :
 ##########
 
 
+def writeMessages (xmlfile, logMess, warnMess, ErrorMess) :
+	xmlfile.write ("<methodMessages>\n")
+	for message in logMess :
+		xmlfile.write ("<logMessage><text><![CDATA["+message+"]]></text></logMessage>\n")
+	for message in warnMess :
+		xmlfile.write ("<message><text>WARNING : <![CDATA["+message+"]]></text></message>\n")
+	for message in errorMess :
+		xmlfile.write ("<errorMessage><text><![CDATA["+message+"]]></text></errorMessage>\n")
+	xmlfile.write ("</methodMessages>\n")
+
+
+##########
+
+
 def writeLogMessages (xmlfile, messages) :
 	xmlfile.write ("<methodMessages>\n")
 	for message in messages :
@@ -591,13 +605,11 @@ def getListOnString (stringList, sepBefore, sepAfter, sepBetween) :
 	else :
 		tempString = ""
 		tempString += sepBefore + str(stringList[0]) + sepAfter
-		for i in xrange (1, len(stringList)) :
-			tempString += sepBetween + sepBefore + str(stringList[1]) + sepAfter
+		for item in xrange (1, len(stringList)) :
+			tempString += sepBetween + sepBefore + str(stringList[item]) + sepAfter
 		
 	return tempString
 
 
 ##########
-
-
 
