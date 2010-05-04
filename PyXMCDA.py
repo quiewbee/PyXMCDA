@@ -519,6 +519,89 @@ def getConstantThresholds (xmltree, critId) :
 	
 ##########################################################################
 #                                                                        #
+#                      GET CRITERION SCALE INFORMATION                   #
+#                                                                        #
+##########################################################################
+
+
+def getCriteriaScalesTypes (xmltree, critId) :
+	scalesTypes = {}
+	for crit in critId :
+		try :
+			xml_cri = xmltree.xpath(".//criterion[@id='"+crit+"']")[0]
+			if xml_cri.find("scale/qualitative") != None :
+				scalesTypes[crit] = "qualitative"
+			else :
+				scalesTypes[crit] = "quantitative"
+		except :
+			scalesTypes[crit] = "quantitative"
+	return scalesTypes
+
+
+##########
+
+	
+def getCriteriaPreferenceDirections (xmltree, critId) :
+	prefDir = {}
+	for crit in critId :
+		try :
+			xml_dir = xmltree.xpath(".//criterion[@id='"+crit+"']/scale/*/preferenceDirection")[0]
+			prefDir[crit] = xml_dir.text
+		except :
+			prefDir[crit] = "max"
+	return prefDir
+
+
+##########
+
+
+def getCriteriaLowerBounds (xmltree, critId) :
+	LB = {}
+	for crit in critId :
+		try :
+			xml_val = xmltree.xpath(".//criterion[@id='"+crit+"']/scale/quantitative/minimum/*")[0]
+			LB[crit] = float(xml_val.text)
+		except :
+			LB[crit] = None
+	return LB
+
+
+##########
+
+
+def getCriteriaUpperBounds (xmltree, critId) :
+	UB = {}
+	for crit in critId :
+		try :
+			xml_val = xmltree.xpath(".//criterion[@id='"+crit+"']/scale/quantitative/maximum/*")[0]
+			UB[crit] = float(xml_val.text)
+		except :
+			UB[crit] = None
+	return UB
+
+
+##########
+
+
+def getCriteriaRankedLabel (xmltree, critId) :
+	RL = {}
+	for crit in critId :
+		try :
+			xml_val = xmltree.xpath(".//criterion[@id='"+crit+"']/scale/qualitative")[0]
+			if xml_val == None :
+				RL[crit] = None
+			else :
+				RL[crit] = {}
+				for rankedLabel in xml_val.findall("rankedLabel") :
+					RL[crit][rankedLabel.find("rank").text] = rankedLabel.find("label").text
+		except :
+			RL[crit] = None
+	
+	return RL
+
+
+##########################################################################
+#                                                                        #
 #                            GET THE PARAMETERS                          #
 #                                                                        #
 ##########################################################################
@@ -534,6 +617,7 @@ def getParameterByName (xmltree, paramName, paramFamilyName = None) :
 	else :
 		return None
 
+
 ##########
 
 
@@ -546,6 +630,23 @@ def getParametersByName (xmltree, paramName, paramFamilyName = None) :
 		paramList = []
 		for param in params.findall("parameter") :
 			paramList.append(getValue(param))
+		return paramList
+	else :
+		return None
+
+
+def getNamedParametersByName (xmltree, paramName, paramFamilyName = None) :
+	if paramFamilyName == None :
+		params = xmltree.xpath(".//parameters[@name='"+paramName+"']")[0]
+	else :
+		params = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameters[@name=\'"+paramName+"\']")[0]
+		
+	if params != None :
+		paramList = {}
+		for param in params.findall("parameter") :
+			index = param.get("name")
+			if index :
+				paramList[index] = getValue(param)
 		return paramList
 	else :
 		return None
@@ -645,5 +746,43 @@ def getListOnString (stringList, sepBefore, sepAfter, sepBetween) :
 	return tempString
 
 
+##########
+
+
+def scaleValue (val, LB1, UB1, LB2, UB2) :
+
+	# Scale a value, from the original scale [LB1, UB1] to [LB2, UB2]
+	if LB1 == UB1 :
+		# Division by 0
+		return None
+	else :
+		a = (UB2-LB2)/(UB1-LB1)
+		b = UB2 - a * UB1
+		
+		return a * val + b
+
+
+##########
+
+
+def scaleIntValue (val, LB1, UB1, nbRank) :
+
+	# Scale a value, from the original scale [LB1, UB1] and return the integer corresponding to the closest rank 
+	if LB1 == UB1 :
+		# Division by 0
+		return 0
+	else :
+		a = nbRank/(UB1-LB1)
+		b = nbRank - a * UB1
+		val = a * val + b
+		
+		ind = 0
+		for i in range (nbRank) :
+			if abs(val-i) < abs(val-ind) :
+				ind = i
+	
+		return ind
+		
+		
 ##########
 
