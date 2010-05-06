@@ -608,13 +608,16 @@ def getCriteriaRankedLabel (xmltree, critId) :
 
 
 def getParameterByName (xmltree, paramName, paramFamilyName = None) :
-	if paramFamilyName == None :
-		param = xmltree.xpath(".//parameter[@name='"+paramName+"']")[0]
-	else :
-		param = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameter[@name=\'"+paramName+"\']")[0]
-	if param != None :
-		return getValue(param)
-	else :
+	try :
+		if paramFamilyName == None :
+			param = xmltree.xpath(".//parameter[@name='"+paramName+"']")[0]
+		else :
+			param = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameter[@name=\'"+paramName+"\']")[0]
+		if param != None :
+			return getValue(param)
+		else :
+			return None
+	except :
 		return None
 
 
@@ -622,35 +625,44 @@ def getParameterByName (xmltree, paramName, paramFamilyName = None) :
 
 
 def getParametersByName (xmltree, paramName, paramFamilyName = None) :
-	if paramFamilyName == None :
-		params = xmltree.xpath(".//parameters[@name='"+paramName+"']")[0]
-	else :
-		params = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameters[@name=\'"+paramName+"\']")[0]
-	if params != None :
-		paramList = []
-		for param in params.findall("parameter") :
-			paramList.append(getValue(param))
-		return paramList
-	else :
-		return None
+	try :
+		if paramFamilyName == None :
+			params = xmltree.xpath(".//parameters[@name='"+paramName+"']")[0]
+		else :
+			params = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameters[@name=\'"+paramName+"\']")[0]
+		if params != None :
+			paramList = []
+			for param in params.findall("parameter") :
+				paramList.append(getValue(param))
+			return paramList
+		else :
+			return {}
+	except :
+		return {}
+		
+
+##########
 
 
 def getNamedParametersByName (xmltree, paramName, paramFamilyName = None) :
-	if paramFamilyName == None :
-		params = xmltree.xpath(".//parameters[@name='"+paramName+"']")[0]
-	else :
-		params = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameters[@name=\'"+paramName+"\']")[0]
-		
-	if params != None :
-		paramList = {}
-		for param in params.findall("parameter") :
-			index = param.get("name")
-			if index :
-				paramList[index] = getValue(param)
-		return paramList
-	else :
-		return None
-		
+	try :
+		if paramFamilyName == None :
+			params = xmltree.xpath(".//parameters[@name='"+paramName+"']")[0]
+		else :
+			params = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameters[@name=\'"+paramName+"\']")[0]
+			
+		if params != None :
+			paramList = {}
+			for param in params.findall("parameter") :
+				index = param.get("name")
+				if index :
+					paramList[index] = getValue(param)
+			return paramList
+		else :
+			return {}
+	except :
+		return {}
+			
 
 ##########################################################################
 #                                                                        #
@@ -750,7 +762,7 @@ def getListOnString (stringList, sepBefore, sepAfter, sepBetween) :
 
 
 def scaleValue (val, LB1, UB1, LB2, UB2) :
-
+	
 	# Scale a value, from the original scale [LB1, UB1] to [LB2, UB2]
 	if LB1 == UB1 :
 		# Division by 0
@@ -770,7 +782,7 @@ def scaleIntValue (val, LB1, UB1, nbRank) :
 	# Scale a value, from the original scale [LB1, UB1] and return the integer corresponding to the closest rank 
 	if LB1 == UB1 :
 		# Division by 0
-		return 0
+		return None
 	else :
 		a = nbRank/(UB1-LB1)
 		b = nbRank - a * UB1
@@ -785,4 +797,14 @@ def scaleIntValue (val, LB1, UB1, nbRank) :
 		
 		
 ##########
+
+
+def closestInt (val) :
+
+	# Return the closest int from a float number val
+	if abs(val-int(val)) < abs(int(val)+1-val) :
+		return int(val)
+	else :
+		return int(val)+1
+		
 
