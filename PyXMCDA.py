@@ -782,7 +782,7 @@ def scaleIntValue (val, LB1, UB1, nbRank) :
 	# Scale a value, from the original scale [LB1, UB1] and return the integer corresponding to the closest rank 
 	if LB1 == UB1 :
 		# Division by 0
-		return None
+		return 0
 	else :
 		a = nbRank/(UB1-LB1)
 		b = nbRank - a * UB1
@@ -798,13 +798,39 @@ def scaleIntValue (val, LB1, UB1, nbRank) :
 		
 ##########
 
+def getRubisElementaryOutranking (altId, critId, perfTable, thresholds) :
 
-def closestInt (val) :
-
-	# Return the closest int from a float number val
-	if abs(val-int(val)) < abs(int(val)+1-val) :
-		return int(val)
-	else :
-		return int(val)+1
-		
-
+	ElemOut = {}
+	for alt1 in altId :
+		ElemOut[alt1] = {}
+		for alt2 in altId :
+			ElemOut[alt1][alt2] = {}
+			for crit in critId :
+				if perfTable[alt1][crit] >= perfTable[alt2][crit] :
+					ElemOut[alt1][alt2][crit] = 1.0
+				else :
+					if not thresholds[crit].has_key('indifference') and not thresholds[crit].has_key('preference') :
+						# aucun seuil, indif ou pref, defini
+						ElemOut[alt1][alt2][crit] = 0.0
+					else :
+						if (thresholds[crit].has_key('indifference') != thresholds[crit].has_key('preference')) :
+							#un seuil, indif ou pref, est defini
+							if thresholds[crit].has_key('indifference') :
+								if perfTable[alt1][crit] + thresholds[crit]["indifference"] >= perfTable[alt2][crit] :
+									ElemOut[alt1][alt2][crit] = 1.0
+								else :
+									ElemOut[alt1][alt2][crit] = 0.0
+							else :
+								if perfTable[alt1][crit] + thresholds[crit]["preference"] >= perfTable[alt2][crit] :
+									ElemOut[alt1][alt2][crit] = 1.0
+								else :
+									ElemOut[alt1][alt2][crit] = 0.0
+						else :
+							# il y a deux seuils
+							if perfTable[alt1][crit] + thresholds[crit]["indifference"] >= perfTable[alt2][crit] :
+								ElemOut[alt1][alt2][crit] = 1.0
+							elif perfTable[alt1][crit] + thresholds[crit]["preference"] >= perfTable[alt2][crit] :
+								ElemOut[alt1][alt2][crit] = 0.5
+							else :
+								ElemOut[alt1][alt2][crit] = 0.0					
+	return ElemOut
