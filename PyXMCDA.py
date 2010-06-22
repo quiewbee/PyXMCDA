@@ -52,8 +52,9 @@ from lxml import etree
 def parseValidate (xmlfile) :
 	
 	try :
-
-		xmlschema_doc = etree.parse(XMCDA_2_0)
+		# TODO (sbigaret) explain that!
+		xmlschema_doc = etree.parse(XMCDA_2_0,
+					    etree.XMLParser(no_network=False))
 		xmlschema = etree.XMLSchema(xmlschema_doc)
 		
 		xmltree = etree.parse(open(xmlfile, 'r'))
