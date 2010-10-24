@@ -296,13 +296,13 @@ def getCategoriesID (xmltree) :
 
 	# Retourne la liste des categories
 	
-	categoriesID = []
+	categoriesId = []
 
 	for listCategories in xmltree.findall('categories'):
 		for category in listCategories.findall('category'):
 			categoriesId.append(str(category.get('id')))
 			
-	return categorieID
+	return categoriesId
 	
 
 ##########
