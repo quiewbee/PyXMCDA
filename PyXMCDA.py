@@ -664,6 +664,24 @@ def getNamedParametersByName (xmltree, paramName, paramFamilyName = None) :
 	except :
 		return {}
 			
+##########################################################################
+#                                                                        #
+#                      GET ALTERNATIVES AFFECTATION                      #
+#                                                                        #
+##########################################################################
+
+def getAlternativesAffectations(xmltree):
+    affectations = xmltree.find(".//alternativesAffectations")
+	
+    table = {}
+    if affectations != None :
+        alts_aff = affectations.findall("alternativeAffectation")
+        for alt_aff in alts_aff :
+            alt = alt_aff.find("alternativeID").text
+            aff = alt_aff.find("categoryID").text
+            table[alt] = aff
+
+    return table
 
 ##########################################################################
 #                                                                        #
