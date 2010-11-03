@@ -326,13 +326,13 @@ def getCategoriesID (xmltree) :
 
 	# Retourne la liste des categories
 	
-	categoriesID = []
+	categoriesId = []
 
 	for listCategories in xmltree.findall('categories'):
 		for category in listCategories.findall('category'):
 			categoriesId.append(str(category.get('id')))
 			
-	return categorieID
+	return categoriesId
 	
 
 ##########
@@ -694,6 +694,24 @@ def getNamedParametersByName (xmltree, paramName, paramFamilyName = None) :
 	except :
 		return {}
 			
+##########################################################################
+#                                                                        #
+#                      GET ALTERNATIVES AFFECTATION                      #
+#                                                                        #
+##########################################################################
+
+def getAlternativesAffectations(xmltree):
+    affectations = xmltree.find(".//alternativesAffectations")
+	
+    table = {}
+    if affectations != None :
+        alts_aff = affectations.findall("alternativeAffectation")
+        for alt_aff in alts_aff :
+            alt = alt_aff.find("alternativeID").text
+            aff = alt_aff.find("categoryID").text
+            table[alt] = aff
+
+    return table
 
 ##########################################################################
 #                                                                        #
@@ -883,6 +901,7 @@ def getRubisElementaryOutranking (altId, critId, perfTable, thresholds) :
 							else :
 								ElemOut[alt1][alt2][crit] = 0.0					
 	return ElemOut
+<<<<<<< HEAD
 	
 #########################
 
@@ -911,3 +930,5 @@ def getVetos (altId, critId, perfTable, thresholds) :
 	
 	
 	
+=======
+>>>>>>> 1a99504c3bed58baca664da17d4ce1699c5c23b5
