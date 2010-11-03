@@ -90,7 +90,7 @@ def getValue(xmltree) :
 		elif xmlvalue.find("label") != None :
 			val = xmlvalue.find("label").text
 		elif xmlvalue.find("rankedlabel") != None :
-			val = "RANKEDLABEL !"
+			val = float(xmlvalue.find("rank").text)
 		elif xmlvalue.find("boolean") != None :
 			val = xmlvalue.find("boolean").text
 		elif xmlvalue.find("NA") != None :
@@ -153,6 +153,36 @@ def getNumericValue(xmltree) :
 ##########
 
 
+def getNumericPerformanceTableValue (xmltree) :
+	
+	# Cette fonction retourne les valeurs utilisables pour un tableau de performance numerique, et met None pour toute autre valeur
+
+	try :
+		xmlvalue = xmltree.find("value")
+		if xmlvalue.find("integer") != None :
+			val = int(xmlvalue.find("integer").text)
+		elif xmlvalue.find("real") != None :
+			val = float(xmlvalue.find("real").text)
+		elif xmlvalue.find("rational") != None :
+			val = float(xmlvalue.find("rational/numerator").text)/float(xmlvalue.find("rational/denominator").text)
+		elif xmlvalue.find("rankedLabel") != None :
+			val = float(xmlvalue.find("rankedLabel/rank").text)
+		elif xmlvalue.find("boolean") != None :
+			if xmlvalue.find("boolean").text == "true":
+				val = 1
+			else:
+				val = 0
+		else :
+			val = None
+	except :
+		val = None
+	
+	return val
+
+
+##########
+
+
 def getSimpleValue (xmltree) :
 	
 	# Cette fonction retourne tous les types simples, c'est a dire tous sauf les intervalles, et les images
@@ -167,8 +197,8 @@ def getSimpleValue (xmltree) :
 			val = float(xmlvalue.find("rational/numerator").text)/float(xmlvalue.find("rational/denominator").text)
 		elif xmlvalue.find("label") != None :
 			val = xmlvalue.find("label").text
-		elif xmlvalue.find("rankedlabel") != None :
-			val = val = xmlvalue.find("rankedlabel/label").text
+		elif xmlvalue.find("rankedLabel") != None :
+			val = float(xmlvalue.find("rankedLabel/rank").text)
 		elif xmlvalue.find("boolean") != None :
 			val = xmlvalue.find("boolean").text
 		elif xmlvalue.find("NA") != None :
@@ -399,7 +429,7 @@ def getNumericPerformanceTable (xmltree, alternativesId, criteriaId) :
 			allCritPerf = altPerf.findall("performance")
 			for critPerf in allCritPerf :
 				crit = critPerf.find("criterionID").text
-				val = getNumericValue(critPerf)
+				val = getNumericPerformanceTableValue(critPerf)
 				Table[alt][crit] = val
 						
 	return Table
@@ -687,7 +717,22 @@ def writeFooter (xmlfile) :
 ##########
 
 
-def writeMessages (xmlfile, logMess, warnMess, ErrorMess) :
+def createMessagesFile (fileName, logMess, warnMess, errorMess):
+	# Creating a message file
+	
+	xmlfile = open(fileName, 'w')
+	writeHeader (xmlfile)
+	
+	writeMessages (xmlfile, logMess, warnMess, errorMess)
+		
+	writeFooter(xmlfile)
+	xmlfile.close()
+
+
+##########
+
+
+def writeMessages (xmlfile, logMess, warnMess, errorMess) :
 	xmlfile.write ("<methodMessages>\n")
 	for message in logMess :
 		xmlfile.write ("<logMessage><text><![CDATA["+message+"]]></text></logMessage>\n")
@@ -800,7 +845,10 @@ def scaleIntValue (val, LB1, UB1, nbRank) :
 ##########
 
 def getRubisElementaryOutranking (altId, critId, perfTable, thresholds) :
-
+		
+	#print perfTable
+	#print thresholds
+		
 	ElemOut = {}
 	for alt1 in altId :
 		ElemOut[alt1] = {}
@@ -835,3 +883,31 @@ def getRubisElementaryOutranking (altId, critId, perfTable, thresholds) :
 							else :
 								ElemOut[alt1][alt2][crit] = 0.0					
 	return ElemOut
+	
+#########################
+
+def getVetos (altId, critId, perfTable, thresholds) :
+	# Retourne un tableau qui retourne, pour chaque couple ordonne, l'ensemble des criteres soulevant un veto fort. Si l'ensemble est None, il n'y a pas de veto.
+	tabVeto = {}
+	for alt1 in altId :
+		for alt2 in altId :
+			for crit in critId :
+				if thresholds[crit].has_key('veto') :
+					if perfTable[alt1][crit] + thresholds[crit]["veto"] < perfTable[alt2][crit] :
+						if not tabVeto.has_key(alt1) :
+							tabVeto[alt1] = {}
+						if not tabVeto[alt1].has_key(alt2) :
+							tabVeto[alt1][alt2] = {}
+						tabVeto[alt1][alt2][crit] = 1
+	return tabVeto
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
