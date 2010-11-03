@@ -901,9 +901,8 @@ def getRubisElementaryOutranking (altId, critId, perfTable, thresholds) :
 							else :
 								ElemOut[alt1][alt2][crit] = 0.0					
 	return ElemOut
-<<<<<<< HEAD
 	
-#########################
+##########
 
 def getVetos (altId, critId, perfTable, thresholds) :
 	# Retourne un tableau qui retourne, pour chaque couple ordonne, l'ensemble des criteres soulevant un veto fort. Si l'ensemble est None, il n'y a pas de veto.
@@ -921,14 +920,3 @@ def getVetos (altId, critId, perfTable, thresholds) :
 	return tabVeto
 
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-=======
->>>>>>> 1a99504c3bed58baca664da17d4ce1699c5c23b5
