@@ -334,9 +334,21 @@ def getCategoriesID (xmltree) :
 			
 	return categoriesId
 	
-
 ##########
 
+def getCategoriesRank(xmltree, catId):
+
+	categoriesRank = {}
+	for cat in catId :
+		try :
+			xml_dir = xmltree.xpath(".//category[@id='"+cat+"']/rank/integer")[0] #FIXME: Always integer?
+			categoriesRank[cat] = int(xml_dir.text)
+		except :
+			categoriesRank[cat] = -1
+
+	return categoriesRank
+
+##########
 
 def getAlternativesReferences (xmltree, altId) :
 
