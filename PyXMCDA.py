@@ -183,6 +183,7 @@ def getNumericPerformanceTableValue (xmltree) :
 ##########
 
 
+#Deprecated
 def getSimpleValue (xmltree) :
 	
 	# Cette fonction retourne tous les types simples, c'est a dire tous sauf les intervalles, et les images
@@ -214,11 +215,20 @@ def getSimpleValue (xmltree) :
 ##########
 
 
-def getAlternativeValue (xmltree, alternativesId) :
+def getAlternativeValue (xmltree, alternativesId, mcdaConcept=None) :
 
+	if mcdaConcept == None :
+		strSearch = "alternativesValues"
+	else :
+		strSearch = "alternativesValues[@mcdaConcept=\'"+mcdaConcept+"\']"
+	try:
+		alternativesValues = xmltree.xpath(strSearch)[0]
+	except:
+		return {}
+		
 	values = {}
 	
-	for alternativeValue in xmltree.findall ("alternativesValues/alternativeValue") :
+	for alternativeValue in alternativesValues.findall ("./alternativeValue") :
 		alt = alternativeValue.find ("alternativeID").text
 		if alternativeId.count(alt) > 0 :
 			values[alt] = getValue (alternativeValue)
@@ -229,11 +239,23 @@ def getAlternativeValue (xmltree, alternativesId) :
 ##########
 
 
-def getCriterionValue (xmltree, criteriaId) :
+def getCriterionValue (xmltree, criteriaId, mcdaConcept=None) :
 
+	if mcdaConcept == None :
+		strSearch = "criteriaValues"
+	else :
+		strSearch = "criteriaValues[@mcdaConcept=\'"+mcdaConcept+"\']"
+	try:
+		criteriaValues = xmltree.xpath(strSearch)[0]
+	except:
+		return {}
+	
+	if not criteriaValues:
+		return {}
+		
 	values = {}
 	
-	for criterionValue in xmltree.findall ("criteriaValues/criterionValue") :
+	for criterionValue in criteriaValues.findall("./criterionValue"):
 		crit = criterionValue.find ("criterionID").text
 		if criteriaId.count(crit) > 0 :
 			values[crit] = getValue (criterionValue)
@@ -334,9 +356,21 @@ def getCategoriesID (xmltree) :
 			
 	return categoriesId
 	
-
 ##########
 
+def getCategoriesRank(xmltree, catId):
+
+	categoriesRank = {}
+	for cat in catId :
+		try :
+			xml_dir = xmltree.xpath(".//category[@id='"+cat+"']/rank/integer")[0] #FIXME: Always integer?
+			categoriesRank[cat] = int(xml_dir.text)
+		except :
+			categoriesRank[cat] = -1
+
+	return categoriesRank
+
+##########
 
 def getAlternativesReferences (xmltree, altId) :
 
@@ -863,10 +897,11 @@ def scaleIntValue (val, LB1, UB1, nbRank) :
 ##########
 
 def getRubisElementaryOutranking (altId, critId, perfTable, thresholds) :
-		
-	#print perfTable
-	#print thresholds
-		
+	
+	# On retourne les perfs sur les criteres a minimiser
+	#criteriaDir = PyXMCDA.getCriteriaPreferenceDirections (xmltree_criteria, critId)
+	# Il faut changer l'intitule de la fonction !!!
+	
 	ElemOut = {}
 	for alt1 in altId :
 		ElemOut[alt1] = {}
