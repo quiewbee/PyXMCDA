@@ -250,7 +250,7 @@ def getCriterionValue (xmltree, criteriaId, mcdaConcept=None) :
 	except:
 		return {}
 	
-	if not criteriaValues:
+	if criteriaValues is None:
 		return {}
 		
 	values = {}
