@@ -749,6 +749,56 @@ def getAlternativesAffectations(xmltree):
 
 ##########################################################################
 #                                                                        #
+#                           WORKING WITH XMLTREE                         #
+#                                                                        #
+##########################################################################
+
+def xmlDeleteThresholds (xmltree, thresholdName = None):
+	# Supprime les seuils definis.
+	# Pour le moment, tous, il faudra apres modifier pour ne prendre que ceux s'appelant thresholdName
+	for xmlThreshold in xmltree.findall(".//thresholds"):
+		xmlThreshold.getparent().remove(xmlThreshold)
+
+def xmlAddThresholds (xmltree, thresholdsList):
+	# Ajoute les seuils dans xmltree
+	# Syntaxe de thresholdsList : thresholds[criterion][thresholdsName] = valeur associee
+	
+	for crit in thresholdsList:
+		# On regarde si le critere existe
+		try:
+			xmlCriterion = xmltree.xpath(".//criterion[@id='"+crit+"']")[0]
+		except:
+			# Le critere n'existe pas, on continue
+			# REMARQUE : on devrait lever une erreur ou au moins un warning
+			continue
+		
+		# On regarde s'il y a un tag thresholds defini sous le critere
+		xmlCriterionThresholds = xmlCriterion.find("thresholds")
+		if xmlCriterionThresholds is None:
+			# On cree le tag thresholds
+			xmlCriterionThresholds = etree.SubElement(xmlCriterion, "thresholds")
+			
+		for threshold in thresholdsList[crit]:
+			# On verifie si le seuil existe deja
+			xmlCriterionThreshold = xmlCriterionThresholds.xpath("threshold[@id='"+threshold+"']")
+			if xmlCriterionThreshold != []:
+				# le seuil existe, on le supprime
+				xmlCriterionThresholds.remove(xmlCriterionThreshold[0])
+				
+			# On ajoute le seuil avec la valeur
+			xmlCriterionThreshold = etree.SubElement(xmlCriterionThresholds, "threshold")
+			xmlCriterionThreshold.set("id", threshold)
+			xmlConstant = etree.SubElement(xmlCriterionThresholds, "constant")
+			xmlReal = etree.SubElement(xmlConstant, "real")
+			xmlReal.text = thresholdsList[crit][threshold]
+	
+
+def xmlWrite (xmltree, xmlFileName):
+	ET = etree.ElementTree (xmltree)
+	ET.write(xmlFileName, encoding="UTF-8")
+
+##########################################################################
+#                                                                        #
 #                              WRITE IN FILES                            #
 #                                                                        #
 ##########################################################################
