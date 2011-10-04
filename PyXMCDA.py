@@ -37,7 +37,7 @@
 ##############################################################################
 
 
-XMCDA_2_0 = "http://sma.uni.lu/d2cms/xmcda/_downloads/XMCDA-2.0.0.xsd"
+XMCDA_2_0 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.0.0.xsd"
 
 from lxml import etree
 
