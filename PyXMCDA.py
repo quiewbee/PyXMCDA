@@ -37,10 +37,11 @@
 ##############################################################################
 
 
-XMCDA_2_0 = "http://sma.uni.lu/d2cms/xmcda/_downloads/XMCDA-2.0.0.xsd"
+XMCDA_2_0 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.0.0.xsd"
+XMCDA_2_1 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.1.0.xsd"
 
 from lxml import etree
-
+import sys, traceback
 
 ##########################################################################
 #                                                                        #
@@ -50,24 +51,44 @@ from lxml import etree
 
 
 def parseValidate (xmlfile) :
-	
+	"""
+	Parses and validates supplied the XMCDA file.
+	Returns the parsed (lxml) ElementTree, or None if the file
+	is not a valid XMCDA file.
+	"""
 	try :
-		# TODO (sbigaret) explain that!
-		xmlschema_doc = etree.parse(XMCDA_2_0,
-					    etree.XMLParser(no_network=False))
-		xmlschema = etree.XMLSchema(xmlschema_doc)
-		
 		xmltree = etree.parse(open(xmlfile, 'r'))
-		
-		if xmlschema.validate(xmltree) :
+		if validateXMCDA(xmltree) :
 			return xmltree.getroot()
-		else:
-			return None
-			
-	except :
-		return None
-		
-		
+	except Exception as e:
+		traceback.print_exc(sys.stderr)
+	return None
+
+
+def validateXMCDA (xmltree):
+	"Checks if xmltree is a valid XMCDA file."
+	ret = False
+
+	try:    ret = validate(xmltree, XMCDA_2_0)
+	except Exception as e: traceback.print_exc(sys.stderr)
+	if ret:
+		return True
+
+	try:    ret = validate(xmltree, XMCDA_2_1)
+	except Exception as e: traceback.print_exc(sys.stderr)
+
+	return ret
+
+
+def validate (xmltree, xsdURL):
+	"Checks if xmltree is valid wrt the supplied xml schema"
+	# TODO (sbigaret) explain that!
+	xmlschema_doc = etree.parse(xsdURL,
+	                            etree.XMLParser(no_network=False))
+	xmlschema = etree.XMLSchema(xmlschema_doc)
+	return xmlschema.validate(xmltree)
+
+
 ##########################################################################
 #                                                                        #
 #                             GET THE VALUES                             #
