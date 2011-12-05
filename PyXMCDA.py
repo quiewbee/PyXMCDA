@@ -809,7 +809,11 @@ def xmlAddThresholds (xmltree, thresholdsList):
 			# On ajoute le seuil avec la valeur
 			xmlCriterionThreshold = etree.SubElement(xmlCriterionThresholds, "threshold")
 			xmlCriterionThreshold.set("id", threshold)
-			xmlConstant = etree.SubElement(xmlCriterionThresholds, "constant")
+			xmlCriterionThreshold.set("name", threshold)
+			xmlCriterionThreshold.set("mcdaConcept", threshold)
+			xmlCriterionThreshold.text = ""
+			xmlConstant = etree.SubElement(xmlCriterionThreshold, "constant")
+			xmlConstant.text = ""
 			xmlReal = etree.SubElement(xmlConstant, "real")
 			xmlReal.text = thresholdsList[crit][threshold]
 	
