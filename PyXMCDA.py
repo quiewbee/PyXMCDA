@@ -1006,7 +1006,7 @@ def getRubisElementaryOutranking (altId, critId, perfTable, thresholds) :
 							# il y a deux seuils
 							if perfTable[alt1][crit] + thresholds[crit]["indifference"] >= perfTable[alt2][crit] :
 								ElemOut[alt1][alt2][crit] = 1.0
-							elif perfTable[alt1][crit] + thresholds[crit]["preference"] >= perfTable[alt2][crit] :
+							elif perfTable[alt1][crit] + thresholds[crit]["preference"] > perfTable[alt2][crit] :
 								ElemOut[alt1][alt2][crit] = 0.5
 							else :
 								ElemOut[alt1][alt2][crit] = 0.0					
