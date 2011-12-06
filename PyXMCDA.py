@@ -379,6 +379,43 @@ def getCategoriesID (xmltree) :
 	
 ##########
 
+def getCategoriesProfiles (xmltree_profiles, catId):
+	
+	catpro = {}
+	for cat in catId:
+		catpro[cat] = {}
+	
+	for xmlprofile in xmltree_profiles.findall(".//categoryProfile"):
+		try:
+			profileId = xmlprofile.find("alternativeID").text
+			lowercat = xmlprofile.find("limits/lowerCategory/categoryID").text
+			uppercat = xmlprofile.find("limits/upperCategory/categoryID").text
+			catpro[lowercat]["upper"] = profileId
+			catpro[uppercat]["lower"] = profileId
+		except:
+			return {}
+	return catpro
+
+##########
+
+def getProfilesCategories (xmltree_profiles, catId):
+	
+	procat = {}
+	
+	for xmlprofile in xmltree_profiles.findall(".//categoryProfile"):
+		try:
+			profileId = xmlprofile.find("alternativeID").text
+			lowercat = xmlprofile.find("limits/lowerCategory/categoryID").text
+			uppercat = xmlprofile.find("limits/upperCategory/categoryID").text
+			procat[profileId] = {}
+			procat[profileId]["upper"] = uppercat
+			procat[profileId]["lower"] = lowercat
+		except:
+			return {}
+	return procat
+
+##########
+
 def getCategoriesRank(xmltree, catId):
 
 	categoriesRank = {}
@@ -1015,7 +1052,7 @@ def getRubisElementaryOutranking (altId, critId, perfTable, thresholds) :
 ##########
 
 def getVetos (altId, critId, perfTable, thresholds) :
-	# Retourne un tableau qui retourne, pour chaque couple ordonne, l'ensemble des criteres soulevant un veto fort. Si l'ensemble est None, il n'y a pas de veto.
+	# Retourne un tableau qui retourne, pour chaque couple ordonne, l'ensemble des criteres soulevant un veto fort (valeur 1) ou un veto faible (valeur 0.5). Si l'ensemble est None, il n'y a pas de veto.
 	tabVeto = {}
 	for alt1 in altId :
 		for alt2 in altId :
@@ -1027,6 +1064,14 @@ def getVetos (altId, critId, perfTable, thresholds) :
 						if not tabVeto[alt1].has_key(alt2) :
 							tabVeto[alt1][alt2] = {}
 						tabVeto[alt1][alt2][crit] = 1
+						
+					elif thresholds[crit].has_key('weakVeto') :
+						if perfTable[alt1][crit] + thresholds[crit]["weakVeto"] < perfTable[alt2][crit] :
+							if not tabVeto.has_key(alt1) :
+								tabVeto[alt1] = {}
+							if not tabVeto[alt1].has_key(alt2) :
+								tabVeto[alt1][alt2] = {}
+							tabVeto[alt1][alt2][crit] = 0.5
 	return tabVeto
 
 	
