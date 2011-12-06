@@ -643,18 +643,21 @@ def getCriteriaComparisons (xmltree, criId, mcdaConcept=None) :
 	
 	else :
 	
-		datas = []
+		datas = {}
 		
 		for pair in comparisons.findall ("pairs/pair") :
-		
-			comp = {}
-			comp["initial"] = getCriteriaReferences(pair.find("initial"), criId)
-			comp["terminal"] = getCriteriaReferences(pair.find("terminal"), criId)
+			init = pair.find("initial/criterionID").text
+			term = pair.find("terminal/criterionID").text
+			val = getNumericValue(pair)
 			
-			if comp["initial"] != [] and comp["terminal"] != [] :
-				comp["val"] = getNumericValue(pair)
-				datas.append(comp)
-			
+			# Only the criteria concerned
+			if criId.count(init) > 0 :
+				if criId.count(term) > 0 :
+					# We check if init is still an entry in the table
+					if not(datas.has_key(init)) :
+						datas[init] = {}
+					datas[init][term] = val
+
 		return datas
 		
 ##########
@@ -677,18 +680,21 @@ def getCategoriesComparisons (xmltree, catId, mcdaConcept=None) :
 	
 	else :
 	
-		datas = []
+		datas = {}
 		
 		for pair in comparisons.findall ("pairs/pair") :
-		
-			comp = {}
-			comp["initial"] = getCategoriesReferences(pair.find("initial"), catId)
-			comp["terminal"] = getCategoriesReferences(pair.find("terminal"), catId)
+			init = pair.find("initial/categoryID").text
+			term = pair.find("terminal/categoryID").text
+			val = getNumericValue(pair)
 			
-			if comp["initial"] != [] and comp["terminal"] != [] :
-				comp["val"] = getNumericValue(pair)
-				datas.append(comp)
-			
+			# Only the categories concerned
+			if catId.count(init) > 0 :
+				if catId.count(term) > 0 :
+					# We check if init is still an entry in the table
+					if not(datas.has_key(init)) :
+						datas[init] = {}
+					datas[init][term] = val
+
 		return datas
 
 
