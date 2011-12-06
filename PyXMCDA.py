@@ -293,7 +293,7 @@ def getCriterionValue (xmltree, criteriaId, mcdaConcept=None) :
 
 def getAlternativesID (xmltree, condition="ACTIVE") :
 
-	# Retourne la liste des alternatives, selon la condition suivante : ALL, ACTIVE, INACTIVE
+	# Retourne la liste des alternatives, selon la condition suivante : ALL, ACTIVE, INACTIVE, FICTIVE, REAL, ACTIVEREAL, ACTIVEFICTIVE
 	# Par defaut, uniquement les alternatives ACTIVE
 	# On suppose que si rien n'est precise, l'alternative est active
 	
@@ -301,12 +301,30 @@ def getAlternativesID (xmltree, condition="ACTIVE") :
 
 	for listAlternatives in xmltree.findall('alternatives'):
 		for alternative in listAlternatives.findall('alternative'):
-			active = alternative.find('active')
-			if condition == "ACTIVE" and (active == None or active.text == "true") :
+			act = alternative.find('active')
+			if act == None or act.text == "true":
+				active = True
+			else:
+				active = False
+			fic = alternative.find('type')
+			if fic == None or fic.text == "real":
+				fictive = False
+			else:
+				fictive = True
+			
+			if condition == "ACTIVE" and active:
 				alternativesID.append(str(alternative.get('id')))
-			elif condition == "INACTIVE" and (active != None and active.text == "false") :
+			elif condition == "INACTIVE" and not active:
 				alternativesID.append(str(alternative.get('id')))
-			elif condition == "ALL" :
+			elif condition == "REAL" and not fictive:
+				alternativesID.append(str(alternative.get('id')))
+			elif condition == "FICTIVE" and fictive:
+				alternativesID.append(str(alternative.get('id')))
+			elif condition == "ACTIVEREAL" and active and not fictive:
+				alternativesID.append(str(alternative.get('id')))
+			elif condition == "ACTIVEFICTIVE" and active and fictive:
+				alternativesID.append(str(alternative.get('id')))
+			elif condition == "ALL":
 				alternativesID.append(str(alternative.get('id')))
 
 	return alternativesID
@@ -364,10 +382,23 @@ def getAttributesID (xmltree, condition="ACTIVE") :
 
 ##########
 
-
 def getCategoriesID (xmltree) :
 
 	# Retourne la liste des categories
+	
+	categoriesId = []
+
+	for listCategories in xmltree.findall('categories'):
+		for category in listCategories.findall('category'):
+			categoriesId.append(str(category.get('id')))
+			
+	return categoriesId
+	
+##########
+
+def getProfilesID (xmltree) :
+
+	# Retourne la liste des alternatives qui servent de profils
 	
 	categoriesId = []
 
@@ -467,6 +498,29 @@ def getCriteriaReferences (xmltree, criId) :
 	else :
 		for xmlId in xmltree.findall("criteriaSet/element/criterionID") :
 			if criId.count(xmlId.text) > 0 :
+				listId.append(xmlId.text)
+			else :
+				listId = []
+				break
+
+	return listId
+	
+##########
+
+
+def getCategoriesReferences (xmltree, catId) :
+
+	# Returns the list of categoryID given in xmltree, only if they are all present in catId (if not, it returns an empty list)
+	
+	listId = []
+	
+	xmlId =  xmltree.find("categoryID")
+	if xmlId != None :
+		if catId.count(xmlId.text) > 0 :
+			listId.append(xmlId.text)
+	else :
+		for xmlId in xmltree.findall("categoriesSet/element/categoryID") :
+			if catId.count(xmlId.text) > 0 :
 				listId.append(xmlId.text)
 			else :
 				listId = []
@@ -596,6 +650,40 @@ def getCriteriaComparisons (xmltree, criId, mcdaConcept=None) :
 			comp = {}
 			comp["initial"] = getCriteriaReferences(pair.find("initial"), criId)
 			comp["terminal"] = getCriteriaReferences(pair.find("terminal"), criId)
+			
+			if comp["initial"] != [] and comp["terminal"] != [] :
+				comp["val"] = getNumericValue(pair)
+				datas.append(comp)
+			
+		return datas
+		
+##########
+
+
+def getCategoriesComparisons (xmltree, catId, mcdaConcept=None) :
+
+	#Retourne le premier categoriesComparisons trouve avec le bon MCDAConcept (si precise)
+	#Par la suite, retourner une liste ?
+	
+	if mcdaConcept == None :
+		strSearch = ".//categoriesComparisons"
+	else :
+		strSearch = ".//categoriesComparisons[@mcdaConcept=\'"+mcdaConcept+"\']"
+
+	comparisons = xmltree.xpath(strSearch)[0]
+
+	if comparisons == None :
+		return []
+	
+	else :
+	
+		datas = []
+		
+		for pair in comparisons.findall ("pairs/pair") :
+		
+			comp = {}
+			comp["initial"] = getCategoriesReferences(pair.find("initial"), catId)
+			comp["terminal"] = getCategoriesReferences(pair.find("terminal"), catId)
 			
 			if comp["initial"] != [] and comp["terminal"] != [] :
 				comp["val"] = getNumericValue(pair)
