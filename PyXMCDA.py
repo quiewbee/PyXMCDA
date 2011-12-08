@@ -43,6 +43,8 @@ XMCDA_2_1 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.1.0.xsd"
 from lxml import etree
 import sys, traceback
 
+__version__="20111208-001"
+
 ##########################################################################
 #                                                                        #
 #                         PARSING AND VALIDATING                         #
