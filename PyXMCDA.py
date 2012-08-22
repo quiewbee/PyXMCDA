@@ -39,6 +39,7 @@
 
 XMCDA_2_0 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.0.0.xsd"
 XMCDA_2_1 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.1.0.xsd"
+XMCDA_2_2 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.2.0.xsd"
 
 from lxml import etree
 import sys, traceback
@@ -77,6 +78,11 @@ def validateXMCDA (xmltree):
 		return True
 
 	try:    ret = validate(xmltree, XMCDA_2_1)
+	except Exception as e: traceback.print_exc(sys.stderr)
+	if ret:
+		return True
+
+	try:    ret = validate(xmltree, XMCDA_2_2)
 	except Exception as e: traceback.print_exc(sys.stderr)
 
 	return ret
