@@ -40,11 +40,12 @@
 XMCDA_2_0 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.0.0.xsd"
 XMCDA_2_1 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.1.0.xsd"
 XMCDA_2_2 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.2.0.xsd"
+XMCDA_2_2_1 = "http://www.decision-deck.org/xmcda/_downloads/XMCDA-2.2.1.xsd"
 
 from lxml import etree
 import sys, traceback
 
-__version__="20111208-001"
+__version__ = "20111208-001"
 
 ##########################################################################
 #                                                                        #
@@ -72,18 +73,25 @@ def validateXMCDA (xmltree):
 	"Checks if xmltree is a valid XMCDA file."
 	ret = False
 
-	try:    ret = validate(xmltree, XMCDA_2_0)
+	try:    ret = validate(xmltree, XMCDA_2_2_1)
+	except Exception as e: traceback.print_exc(sys.stderr)
+    if ret:
+        return True
+	
+    try:    ret = validate(xmltree, XMCDA_2_2)
+	except Exception as e: traceback.print_exc(sys.stderr)
+    if ret:
+        return True
+        
+    try:    ret = validate(xmltree, XMCDA_2_1)
+    except Exception as e: traceback.print_exc(sys.stderr)
+    if ret:
+        return True
+    
+    try:    ret = validate(xmltree, XMCDA_2_0)
 	except Exception as e: traceback.print_exc(sys.stderr)
 	if ret:
 		return True
-
-	try:    ret = validate(xmltree, XMCDA_2_1)
-	except Exception as e: traceback.print_exc(sys.stderr)
-	if ret:
-		return True
-
-	try:    ret = validate(xmltree, XMCDA_2_2)
-	except Exception as e: traceback.print_exc(sys.stderr)
 
 	return ret
 
@@ -115,7 +123,7 @@ def getValue(xmltree) :
 		elif xmlvalue.find("interval") != None :
 			val = "INTERVAL !"
 		elif xmlvalue.find("rational") != None :
-			val = float(xmlvalue.find("rational/numerator").text)/float(xmlvalue.find("rational/denominator").text)
+			val = float(xmlvalue.find("rational/numerator").text) / float(xmlvalue.find("rational/denominator").text)
 		elif xmlvalue.find("label") != None :
 			val = xmlvalue.find("label").text
 		elif xmlvalue.find("rankedlabel") != None :
@@ -168,7 +176,7 @@ def getNumericValue(xmltree) :
 		elif xmlvalue.find("real") != None :
 			val = float(xmlvalue.find("real").text)
 		elif xmlvalue.find("rational") != None :
-			val = float(xmlvalue.find("rational/numerator").text)/float(xmlvalue.find("rational/denominator").text)
+			val = float(xmlvalue.find("rational/numerator").text) / float(xmlvalue.find("rational/denominator").text)
 		elif xmlvalue.find("NA") != None :
 			val = "NA"
 		else :
@@ -193,7 +201,7 @@ def getNumericPerformanceTableValue (xmltree) :
 		elif xmlvalue.find("real") != None :
 			val = float(xmlvalue.find("real").text)
 		elif xmlvalue.find("rational") != None :
-			val = float(xmlvalue.find("rational/numerator").text)/float(xmlvalue.find("rational/denominator").text)
+			val = float(xmlvalue.find("rational/numerator").text) / float(xmlvalue.find("rational/denominator").text)
 		elif xmlvalue.find("rankedLabel") != None :
 			val = float(xmlvalue.find("rankedLabel/rank").text)
 		elif xmlvalue.find("boolean") != None :
@@ -224,7 +232,7 @@ def getSimpleValue (xmltree) :
 		elif xmlvalue.find("real") != None :
 			val = float(xmlvalue.find("real").text)
 		elif xmlvalue.find("rational") != None :
-			val = float(xmlvalue.find("rational/numerator").text)/float(xmlvalue.find("rational/denominator").text)
+			val = float(xmlvalue.find("rational/numerator").text) / float(xmlvalue.find("rational/denominator").text)
 		elif xmlvalue.find("label") != None :
 			val = xmlvalue.find("label").text
 		elif xmlvalue.find("rankedLabel") != None :
@@ -249,7 +257,7 @@ def getAlternativeValue (xmltree, alternativesId, mcdaConcept=None) :
 	if mcdaConcept == None :
 		strSearch = "alternativesValues"
 	else :
-		strSearch = "alternativesValues[@mcdaConcept=\'"+mcdaConcept+"\']"
+		strSearch = "alternativesValues[@mcdaConcept=\'" + mcdaConcept + "\']"
 	try:
 		alternativesValues = xmltree.xpath(strSearch)[0]
 	except:
@@ -273,7 +281,7 @@ def getCriterionValue (xmltree, criteriaId, mcdaConcept=None) :
 	if mcdaConcept == None :
 		strSearch = "criteriaValues"
 	else :
-		strSearch = "criteriaValues[@mcdaConcept=\'"+mcdaConcept+"\']"
+		strSearch = "criteriaValues[@mcdaConcept=\'" + mcdaConcept + "\']"
 	try:
 		criteriaValues = xmltree.xpath(strSearch)[0]
 	except:
@@ -460,7 +468,7 @@ def getCategoriesRank(xmltree, catId):
 	categoriesRank = {}
 	for cat in catId :
 		try :
-			xml_dir = xmltree.xpath(".//category[@id='"+cat+"']/rank/integer")[0] #FIXME: Always integer?
+			xml_dir = xmltree.xpath(".//category[@id='" + cat + "']/rank/integer")[0] #FIXME: Always integer?
 			categoriesRank[cat] = int(xml_dir.text)
 		except :
 			categoriesRank[cat] = -1
@@ -475,7 +483,7 @@ def getAlternativesReferences (xmltree, altId) :
 	
 	listId = []
 	
-	xmlId =  xmltree.find("alternativeID")
+	xmlId = xmltree.find("alternativeID")
 	if xmlId != None :
 		if altId.count(xmlId.text) > 0 :
 			listId.append(xmlId.text)
@@ -499,7 +507,7 @@ def getCriteriaReferences (xmltree, criId) :
 	
 	listId = []
 	
-	xmlId =  xmltree.find("criterionID")
+	xmlId = xmltree.find("criterionID")
 	if xmlId != None :
 		if criId.count(xmlId.text) > 0 :
 			listId.append(xmlId.text)
@@ -522,7 +530,7 @@ def getCategoriesReferences (xmltree, catId) :
 	
 	listId = []
 	
-	xmlId =  xmltree.find("categoryID")
+	xmlId = xmltree.find("categoryID")
 	if xmlId != None :
 		if catId.count(xmlId.text) > 0 :
 			listId.append(xmlId.text)
@@ -555,7 +563,7 @@ def getPerformanceTable (xmltree, alternativesId, criteriaId) :
 		allAltPerf = perfTable.findall("alternativePerformances")
 		for altPerf in allAltPerf :
 			alt = altPerf.find("alternativeID").text
-			Table[alt]={}
+			Table[alt] = {}
 			allCritPerf = altPerf.findall("performance")
 			for critPerf in allCritPerf :
 				crit = critPerf.find("criterionID").text
@@ -579,7 +587,7 @@ def getNumericPerformanceTable (xmltree, alternativesId, criteriaId) :
 		allAltPerf = perfTable.findall("alternativePerformances")
 		for altPerf in allAltPerf :
 			alt = altPerf.find("alternativeID").text
-			Table[alt]={}
+			Table[alt] = {}
 			allCritPerf = altPerf.findall("performance")
 			for critPerf in allCritPerf :
 				crit = critPerf.find("criterionID").text
@@ -604,7 +612,7 @@ def getAlternativesComparisons (xmltree, altId, mcdaConcept=None) :
 	if mcdaConcept == None :
 		strSearch = ".//alternativesComparisons"
 	else :
-		strSearch = ".//alternativesComparisons[@mcdaConcept=\'"+mcdaConcept+"\']"
+		strSearch = ".//alternativesComparisons[@mcdaConcept=\'" + mcdaConcept + "\']"
 
 	comparisons = xmltree.xpath(strSearch)[0]
 
@@ -642,7 +650,7 @@ def getCriteriaComparisons (xmltree, criId, mcdaConcept=None) :
 	if mcdaConcept == None :
 		strSearch = ".//criteriaComparisons"
 	else :
-		strSearch = ".//criteriaComparisons[@mcdaConcept=\'"+mcdaConcept+"\']"
+		strSearch = ".//criteriaComparisons[@mcdaConcept=\'" + mcdaConcept + "\']"
 
 	comparisons = xmltree.xpath(strSearch)[0]
 
@@ -679,7 +687,7 @@ def getCategoriesComparisons (xmltree, catId, mcdaConcept=None) :
 	if mcdaConcept == None :
 		strSearch = ".//categoriesComparisons"
 	else :
-		strSearch = ".//categoriesComparisons[@mcdaConcept=\'"+mcdaConcept+"\']"
+		strSearch = ".//categoriesComparisons[@mcdaConcept=\'" + mcdaConcept + "\']"
 
 	comparisons = xmltree.xpath(strSearch)[0]
 
@@ -753,7 +761,7 @@ def getCriteriaScalesTypes (xmltree, critId) :
 	scalesTypes = {}
 	for crit in critId :
 		try :
-			xml_cri = xmltree.xpath(".//criterion[@id='"+crit+"']")[0]
+			xml_cri = xmltree.xpath(".//criterion[@id='" + crit + "']")[0]
 			if xml_cri.find("scale/qualitative") != None :
 				scalesTypes[crit] = "qualitative"
 			else :
@@ -770,7 +778,7 @@ def getCriteriaPreferenceDirections (xmltree, critId) :
 	prefDir = {}
 	for crit in critId :
 		try :
-			xml_dir = xmltree.xpath(".//criterion[@id='"+crit+"']/scale/*/preferenceDirection")[0]
+			xml_dir = xmltree.xpath(".//criterion[@id='" + crit + "']/scale/*/preferenceDirection")[0]
 			prefDir[crit] = xml_dir.text
 		except :
 			prefDir[crit] = "max"
@@ -784,7 +792,7 @@ def getCriteriaLowerBounds (xmltree, critId) :
 	LB = {}
 	for crit in critId :
 		try :
-			xml_val = xmltree.xpath(".//criterion[@id='"+crit+"']/scale/quantitative/minimum/*")[0]
+			xml_val = xmltree.xpath(".//criterion[@id='" + crit + "']/scale/quantitative/minimum/*")[0]
 			LB[crit] = float(xml_val.text)
 		except :
 			LB[crit] = None
@@ -798,7 +806,7 @@ def getCriteriaUpperBounds (xmltree, critId) :
 	UB = {}
 	for crit in critId :
 		try :
-			xml_val = xmltree.xpath(".//criterion[@id='"+crit+"']/scale/quantitative/maximum/*")[0]
+			xml_val = xmltree.xpath(".//criterion[@id='" + crit + "']/scale/quantitative/maximum/*")[0]
 			UB[crit] = float(xml_val.text)
 		except :
 			UB[crit] = None
@@ -812,7 +820,7 @@ def getCriteriaRankedLabel (xmltree, critId) :
 	RL = {}
 	for crit in critId :
 		try :
-			xml_val = xmltree.xpath(".//criterion[@id='"+crit+"']/scale/qualitative")[0]
+			xml_val = xmltree.xpath(".//criterion[@id='" + crit + "']/scale/qualitative")[0]
 			if xml_val == None :
 				RL[crit] = None
 			else :
@@ -832,12 +840,12 @@ def getCriteriaRankedLabel (xmltree, critId) :
 ##########################################################################
 
 
-def getParameterByName (xmltree, paramName, paramFamilyName = None) :
+def getParameterByName (xmltree, paramName, paramFamilyName=None) :
 	try :
 		if paramFamilyName == None :
-			param = xmltree.xpath(".//parameter[@name='"+paramName+"']")[0]
+			param = xmltree.xpath(".//parameter[@name='" + paramName + "']")[0]
 		else :
-			param = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameter[@name=\'"+paramName+"\']")[0]
+			param = xmltree.xpath(".//methodParameters[@name=\'" + paramFamilyName + "\']/parameter[@name=\'" + paramName + "\']")[0]
 		if param != None :
 			return getValue(param)
 		else :
@@ -849,12 +857,12 @@ def getParameterByName (xmltree, paramName, paramFamilyName = None) :
 ##########
 
 
-def getParametersByName (xmltree, paramName, paramFamilyName = None) :
+def getParametersByName (xmltree, paramName, paramFamilyName=None) :
 	try :
 		if paramFamilyName == None :
-			params = xmltree.xpath(".//parameters[@name='"+paramName+"']")[0]
+			params = xmltree.xpath(".//parameters[@name='" + paramName + "']")[0]
 		else :
-			params = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameters[@name=\'"+paramName+"\']")[0]
+			params = xmltree.xpath(".//methodParameters[@name=\'" + paramFamilyName + "\']/parameters[@name=\'" + paramName + "\']")[0]
 		if params != None :
 			paramList = []
 			for param in params.findall("parameter") :
@@ -869,12 +877,12 @@ def getParametersByName (xmltree, paramName, paramFamilyName = None) :
 ##########
 
 
-def getNamedParametersByName (xmltree, paramName, paramFamilyName = None) :
+def getNamedParametersByName (xmltree, paramName, paramFamilyName=None) :
 	try :
 		if paramFamilyName == None :
-			params = xmltree.xpath(".//parameters[@name='"+paramName+"']")[0]
+			params = xmltree.xpath(".//parameters[@name='" + paramName + "']")[0]
 		else :
-			params = xmltree.xpath(".//methodParameters[@name=\'"+paramFamilyName+"\']/parameters[@name=\'"+paramName+"\']")[0]
+			params = xmltree.xpath(".//methodParameters[@name=\'" + paramFamilyName + "\']/parameters[@name=\'" + paramName + "\']")[0]
 			
 		if params != None :
 			paramList = {}
@@ -913,7 +921,7 @@ def getAlternativesAffectations(xmltree):
 #                                                                        #
 ##########################################################################
 
-def xmlDeleteThresholds (xmltree, thresholdName = None):
+def xmlDeleteThresholds (xmltree, thresholdName=None):
 	# Supprime les seuils definis.
 	# Pour le moment, tous, il faudra apres modifier pour ne prendre que ceux s'appelant thresholdName
 	for xmlThreshold in xmltree.findall(".//thresholds"):
@@ -926,7 +934,7 @@ def xmlAddThresholds (xmltree, thresholdsList):
 	for crit in thresholdsList:
 		# On regarde si le critere existe
 		try:
-			xmlCriterion = xmltree.xpath(".//criterion[@id='"+crit+"']")[0]
+			xmlCriterion = xmltree.xpath(".//criterion[@id='" + crit + "']")[0]
 		except:
 			# Le critere n'existe pas, on continue
 			# REMARQUE : on devrait lever une erreur ou au moins un warning
@@ -940,7 +948,7 @@ def xmlAddThresholds (xmltree, thresholdsList):
 			
 		for threshold in thresholdsList[crit]:
 			# On verifie si le seuil existe deja
-			xmlCriterionThreshold = xmlCriterionThresholds.xpath("threshold[@id='"+threshold+"']")
+			xmlCriterionThreshold = xmlCriterionThresholds.xpath("threshold[@id='" + threshold + "']")
 			if xmlCriterionThreshold != []:
 				# le seuil existe, on le supprime
 				xmlCriterionThresholds.remove(xmlCriterionThreshold[0])
@@ -1001,11 +1009,11 @@ def createMessagesFile (fileName, logMess, warnMess, errorMess):
 def writeMessages (xmlfile, logMess, warnMess, errorMess) :
 	xmlfile.write ("<methodMessages>\n")
 	for message in logMess :
-		xmlfile.write ("<logMessage><text><![CDATA["+message+"]]></text></logMessage>\n")
+		xmlfile.write ("<logMessage><text><![CDATA[" + message + "]]></text></logMessage>\n")
 	for message in warnMess :
-		xmlfile.write ("<message><text>WARNING : <![CDATA["+message+"]]></text></message>\n")
+		xmlfile.write ("<message><text>WARNING : <![CDATA[" + message + "]]></text></message>\n")
 	for message in errorMess :
-		xmlfile.write ("<errorMessage><text><![CDATA["+message+"]]></text></errorMessage>\n")
+		xmlfile.write ("<errorMessage><text><![CDATA[" + message + "]]></text></errorMessage>\n")
 	xmlfile.write ("</methodMessages>\n")
 
 
@@ -1015,7 +1023,7 @@ def writeMessages (xmlfile, logMess, warnMess, errorMess) :
 def writeLogMessages (xmlfile, messages) :
 	xmlfile.write ("<methodMessages>\n")
 	for message in messages :
-		xmlfile.write ("<logMessage><text><![CDATA["+message+"]]></text></logMessage>\n")
+		xmlfile.write ("<logMessage><text><![CDATA[" + message + "]]></text></logMessage>\n")
 	xmlfile.write ("</methodMessages>\n")
 
 
@@ -1025,7 +1033,7 @@ def writeLogMessages (xmlfile, messages) :
 def writeErrorMessages (xmlfile, messages) :
 	xmlfile.write ("<methodMessages>\n")
 	for message in messages :
-		xmlfile.write ("<errorMessage><text><![CDATA["+message+"]]></text></errorMessage>\n")
+		xmlfile.write ("<errorMessage><text><![CDATA[" + message + "]]></text></errorMessage>\n")
 	xmlfile.write ("</methodMessages>\n")
 
 
@@ -1037,7 +1045,7 @@ def writeErrorMessages (xmlfile, messages) :
 
 
 def getStringPart (string, namePart) :
-	return (string.partition("###"+namePart+"###")[2]).partition("@@@")[0]
+	return (string.partition("###" + namePart + "###")[2]).partition("@@@")[0]
 
 
 ##########
@@ -1045,7 +1053,7 @@ def getStringPart (string, namePart) :
 
 def getCleanedStringPart (string, namePart) :
 	# Retire la liste de cplexamp
-	str = (string.partition("###"+namePart+"###")[2]).partition("@@@")[0]
+	str = (string.partition("###" + namePart + "###")[2]).partition("@@@")[0]
 	while str.partition ("cplexamp: ")[1] != "" :
 		str = str.partition ("cplexamp: ")[2]
 	return str
@@ -1080,7 +1088,7 @@ def scaleValue (val, LB1, UB1, LB2, UB2) :
 		# Division by 0
 		return None
 	else :
-		a = (UB2-LB2)/(UB1-LB1)
+		a = (UB2 - LB2) / (UB1 - LB1)
 		b = UB2 - a * UB1
 		
 		return a * val + b
@@ -1096,13 +1104,13 @@ def scaleIntValue (val, LB1, UB1, nbRank) :
 		# Division by 0
 		return 0
 	else :
-		a = nbRank/(UB1-LB1)
+		a = nbRank / (UB1 - LB1)
 		b = nbRank - a * UB1
 		val = a * val + b
 		
 		ind = 0
 		for i in range (nbRank) :
-			if abs(val-i) < abs(val-ind) :
+			if abs(val - i) < abs(val - ind) :
 				ind = i
 	
 		return ind
